@@ -2,11 +2,11 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct PorkStake {
-    authority: Pubkey,
-    bump: u8,
-    escrowed_x_tokens: Pubkey,
-    y_mint: Pubkey,
-    y_amount: u64,
+    pub authority: Pubkey,
+    pub bump: u8,
+    pub escrowed_x_tokens: Pubkey,
+    pub y_mint: Pubkey,
+    pub y_amount: u64,
 }
 
 impl PorkStake {

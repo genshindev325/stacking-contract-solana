@@ -1,26 +1,51 @@
 use crate::state::stake::*;
+use crate::errors::PorkStakeError;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::{
+  associated_token::AssociatedToken,
+  token::{ self, Mint, Token, TokenAccount, Transfer as SplTransfer }
+};
 
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+  let pork_stake = &mut ctx.accounts.pork_stake;
+  
+  pork_stake.bump = *ctx.bumps.get("pork").ok_or(PorkStakeError::StakeBumpError)?;
+
+  let destination = &ctx.accounts.stake_ata;
+  let source = &ctx.accounts.from_ata;
+  let token_program = &ctx.accounts.token_program;
+  let authority = &ctx.accounts.from;
+
+  // Transfer tokens from taker to initializer
+  let cpi_accounts = SplTransfer {
+      from: source.to_account_info().clone(),
+      to: destination.to_account_info().clone(),
+      authority: authority.to_account_info().clone(),
+  };
+  let cpi_program = token_program.to_account_info();
+  
+  token::transfer(
+      CpiContext::new(cpi_program, cpi_accounts),
+      amount)?;
   Ok(())
 }
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
   
-  #[account(mut)]
-  from: Signer<'info>,
-
   /// JOHN PORK Token Mint Address
-  pork_mint: Account<'info, Mint>,
+  pub pork_mint: Account<'info, Mint>,
 
-  /// ATA of JOHN PORK Token Mint
+  #[account(mut)]
+  pub from: Signer<'info>,
+
+  // ATA of JOHN PORK Token Mint
   #[account(
       mut, 
-      constraint = from_pork_token.mint == pork_mint.key() && from_pork_token.owner == from.key()
+      associated_token::mint = pork_mint,
+      associated_token::authority = from,
   )]
-  from_pork_token: Account<'info, TokenAccount>,
+  pub from_ata: Account<'info, TokenAccount>,
 
   #[account(
       init_if_needed, 
@@ -34,14 +59,15 @@ pub struct Deposit<'info> {
   #[account(
     init_if_needed,
     payer = from,
-    token::mint = pork_mint,
-    token::authority = pork_stake,
+    associated_token::mint = pork_mint,
+    associated_token::authority = pork_stake,
   )]
-  stake_pork_tokens: Account<'info, TokenAccount>,
-
-  token_program: Program<'info, Token>,
-  rent: Sysvar<'info, Rent>,
-  system_program: Program<'info, System>,
+  pub stake_ata: Account<'info, TokenAccount>,
+  
+  pub token_program: Program<'info, Token>,
+  pub associated_token_program: Program<'info, AssociatedToken>,
+  pub rent: Sysvar<'info, Rent>,
+  pub system_program: Program<'info, System>,
 }
 
 
