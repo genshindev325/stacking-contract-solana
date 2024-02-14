@@ -1,4 +1,9 @@
 use anchor_lang::prelude::*;
+use instructions::*;
+
+pub mod instructions;
+pub mod state;
+pub mod errors;
 
 declare_id!("CUEpHJ5D7yEHtQDf5zwRdWTtkxKgB98gaMPoHkBzfZUP");
 
@@ -6,10 +11,7 @@ declare_id!("CUEpHJ5D7yEHtQDf5zwRdWTtkxKgB98gaMPoHkBzfZUP");
 pub mod pork_staking {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        Ok(())
+    pub fn initialize(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+        instructions::deposit::deposit(ctx, amount)
     }
 }
-
-#[derive(Accounts)]
-pub struct Initialize {}
