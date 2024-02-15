@@ -12,9 +12,16 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
   let source = &ctx.accounts.from_ata;
   let token_program = &ctx.accounts.token_program;
   let authority = &ctx.accounts.from;
+  
   let user = &mut ctx.accounts.pork_user;
 
-  user.deposted_amount += amount;
+  if user.deposted_amount == 0 {
+    user.deposted_amount = amount;
+  } else {
+    user.deposted_amount += amount;
+  }
+  
+  user.last_deposit_timestamp = Clock::get()?.unix_timestamp;
 
   // Transfer tokens from taker to initializer
   let cpi_accounts = SplTransfer {

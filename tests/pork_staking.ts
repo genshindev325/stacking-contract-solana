@@ -146,6 +146,8 @@ describe("pork_staking", () => {
       firstDeposit.toNumber(),
       "First Deposit"
     );
+
+    console.log(_porkUser.lastDepositTimestamp.toNumber());
   });
 
   it("Second Deposited!", async () => {
@@ -183,6 +185,9 @@ describe("pork_staking", () => {
       (firstDeposit.toNumber() + secondDeposit.toNumber()),
       "Second Deposit"
     );
+
+    console.log(_porkUser.lastDepositTimestamp.toNumber());
+    
   });
 
 
