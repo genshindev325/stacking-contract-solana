@@ -5,30 +5,32 @@ use anchor_spl::{
   token::{ self, Mint, Token, TokenAccount, Transfer as SplTransfer }
 };
 
-pub fn cashout(ctx: Context<CashOut>, amount: u64) -> Result<()> {
-  // let destination = &ctx.accounts.to_ata;
-  // let source = &ctx.accounts.stake_ata;
-  // let token_program = &ctx.accounts.token_program;
-  // let authority = &ctx.accounts.pork_stake;
-
-  // // Transfer tokens from taker to initializer
-  // let cpi_accounts = SplTransfer {
-  //     from: source.to_account_info().clone(),
-  //     to: destination.to_account_info().clone(),
-  //     authority: authority.to_account_info().clone(),
-  // };
-  // let cpi_program = token_program.to_account_info();
+pub fn cashout(ctx: Context<CashOut>, stake_bump: u8, amount: u64) -> Result<()> {
   
-  // token::transfer(
-  //     CpiContext::new_with_signer(
-  //         cpi_program, 
-  //         cpi_accounts, 
-  //         &[&["pork".as_bytes(), &[ctx.accounts.pork_stake.bump]]]),
-  //     amount)?;
+  let destination = &ctx.accounts.to_ata;
+  let source = &ctx.accounts.stake_ata;
+  let token_program = &ctx.accounts.token_program;
+  let authority = &ctx.accounts.pork_stake;
+
+  // Transfer tokens from taker to initializer
+  let cpi_accounts = SplTransfer {
+      from: source.to_account_info().clone(),
+      to: destination.to_account_info().clone(),
+      authority: authority.to_account_info().clone(),
+  };
+  let cpi_program = token_program.to_account_info();
+  
+  token::transfer(
+      CpiContext::new_with_signer(
+          cpi_program, 
+          cpi_accounts, 
+          &[&["pork".as_bytes(), &[stake_bump]]]),
+      amount)?;
   Ok(())
 }
 
 #[derive(Accounts)]
+#[instruction(stake_bump: u8)]
 pub struct CashOut<'info> {
   
   /// JOHN PORK Token Mint Address
@@ -39,7 +41,8 @@ pub struct CashOut<'info> {
 
   // ATA of JOHN PORK Token Mint
   #[account(
-      mut, 
+      init_if_needed, 
+      payer = to, 
       associated_token::mint = pork_mint,
       associated_token::authority = to,
   )]
@@ -48,7 +51,7 @@ pub struct CashOut<'info> {
   #[account(
       mut,  
       seeds = ["pork".as_bytes()],
-      bump,
+      bump = stake_bump,
   )]
   pub pork_stake: Account<'info, PorkStake>,
 
@@ -61,4 +64,5 @@ pub struct CashOut<'info> {
   
   pub token_program: Program<'info, Token>,
   pub associated_token_program: Program<'info, AssociatedToken>,
+  pub system_program: Program<'info, System>
 }

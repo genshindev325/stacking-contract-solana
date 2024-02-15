@@ -1,5 +1,6 @@
 use crate::state::stake::*;
-use crate::errors::PorkStakeError;
+use crate::state::user::*;
+// use crate::errors::PorkStakeError;
 use anchor_lang::prelude::*;
 use anchor_spl::{
   associated_token::AssociatedToken,
@@ -7,14 +8,13 @@ use anchor_spl::{
 };
 
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-  let pork_stake = &mut ctx.accounts.pork_stake;
-  
-  pork_stake.bump = *ctx.bumps.get("pork").ok_or(PorkStakeError::StakeBumpError)?;
-
   let destination = &ctx.accounts.stake_ata;
   let source = &ctx.accounts.from_ata;
   let token_program = &ctx.accounts.token_program;
   let authority = &ctx.accounts.from;
+  let user = &mut ctx.accounts.pork_user;
+
+  user.deposted_amount += amount;
 
   // Transfer tokens from taker to initializer
   let cpi_accounts = SplTransfer {
@@ -27,6 +27,7 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
   token::transfer(
       CpiContext::new(cpi_program, cpi_accounts),
       amount)?;
+  
   Ok(())
 }
 
@@ -48,26 +49,31 @@ pub struct Deposit<'info> {
   pub from_ata: Account<'info, TokenAccount>,
 
   #[account(
-      init_if_needed, 
-      payer = from,  
-      space=PorkStake::LEN,
-      seeds = ["pork".as_bytes()],
-      bump,
+    mut,
+    seeds = ["pork".as_bytes()],
+    bump,
   )]
   pub pork_stake: Account<'info, PorkStake>,
 
   #[account(
-    init_if_needed,
-    payer = from,
+    mut,
     associated_token::mint = pork_mint,
     associated_token::authority = pork_stake,
   )]
   pub stake_ata: Account<'info, TokenAccount>,
+
+  #[account(
+    init_if_needed,
+    payer = from,
+    space=PorkUser::LEN,
+    seeds = ["porkuser".as_bytes(), from.key().as_ref()],
+    bump,
+  )]
+  pub pork_user: Account<'info, PorkUser>,
   
-  pub token_program: Program<'info, Token>,
-  pub associated_token_program: Program<'info, AssociatedToken>,
-  pub rent: Sysvar<'info, Rent>,
-  pub system_program: Program<'info, System>,
+  token_program: Program<'info, Token>,
+  associated_token_program: Program<'info, AssociatedToken>,
+  system_program: Program<'info, System>
 }
 
 
