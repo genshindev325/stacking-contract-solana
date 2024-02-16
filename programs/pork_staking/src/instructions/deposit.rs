@@ -1,5 +1,6 @@
 use crate::state::stake::*;
 use crate::state::user::*;
+use crate::utils::calculate_rewards;
 // use crate::errors::PorkStakeError;
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -15,13 +16,17 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
   
   let user = &mut ctx.accounts.pork_user;
 
+  let current_timestamp = Clock::get()?.unix_timestamp;
+
   if user.deposted_amount == 0 {
     user.deposted_amount = amount;
   } else {
+
+    user.claimable_amount += calculate_rewards(user.deposted_amount, user.last_deposit_timestamp, current_timestamp);
     user.deposted_amount += amount;
   }
   
-  user.last_deposit_timestamp = Clock::get()?.unix_timestamp;
+  user.last_deposit_timestamp = current_timestamp;
 
   // Transfer tokens from taker to initializer
   let cpi_accounts = SplTransfer {

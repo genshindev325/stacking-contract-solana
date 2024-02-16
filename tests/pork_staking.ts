@@ -15,6 +15,7 @@ import {
 } from "@solana/spl-token";
 
 import { PublicKey, Keypair, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
+import sinon from 'sinon';
 
 describe("pork_staking", () => {
   // Configure the client to use the local cluster.
@@ -39,6 +40,7 @@ describe("pork_staking", () => {
 
   let secondDeposit = new anchor.BN(200);
 
+  let clock;
 
   before(async () => {
     // Create new mint account
@@ -82,6 +84,12 @@ describe("pork_staking", () => {
       program.programId
     );
 
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(function () {
+    // Restore the original timers
+    clock.restore();
   });
 
   it("Initialized!", async () => {
@@ -98,12 +106,12 @@ describe("pork_staking", () => {
       .signers([fromKp])
       .rpc({ skipPreflight: true })
 
-    
+
     console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
     const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
-    
+
     assert.strictEqual(
       parseInt(toTokenAccount.value.amount),
       0,
@@ -127,12 +135,12 @@ describe("pork_staking", () => {
       .signers([fromKp])
       .rpc({ skipPreflight: true })
 
-    
+
     console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
     const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
-    
+
     assert.strictEqual(
       parseInt(toTokenAccount.value.amount),
       firstDeposit.toNumber(),
@@ -151,6 +159,17 @@ describe("pork_staking", () => {
   });
 
   it("Second Deposited!", async () => {
+    const startTime = new Date();
+
+    console.log(startTime)
+
+    clock.tick(3600000); 
+
+    const endTime = new Date();
+
+
+    console.log(endTime)
+
     const txHash = await program.methods.deposit(secondDeposit)
       .accounts({
         porkMint: porkMint,
@@ -166,12 +185,12 @@ describe("pork_staking", () => {
       .signers([fromKp])
       .rpc({ skipPreflight: true })
 
-    
+
     console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
     const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
-    
+
     assert.strictEqual(
       parseInt(toTokenAccount.value.amount),
       (firstDeposit.toNumber() + secondDeposit.toNumber()),
@@ -186,8 +205,8 @@ describe("pork_staking", () => {
       "Second Deposit"
     );
 
-    console.log(_porkUser.lastDepositTimestamp.toNumber());
-    
+    console.log(_porkUser.claimableAmount.toNumber());
+
   });
 
 
@@ -208,12 +227,12 @@ describe("pork_staking", () => {
   //     .signers([fromKp])
   //     .rpc({ skipPreflight: true })
 
-    
+
   //   console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
   //   await program.provider.connection.confirmTransaction(txHash, "finalized");
   //   const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
-    
+
   //   assert.strictEqual(
   //     parseInt(toTokenAccount.value.amount),
   //     300,
