@@ -1,19 +1,19 @@
 use crate::state::stake::*;
 use crate::state::user::*;
-use crate::utils::{calculate_rewards, calculate_bigger_holder_rewards};
+use crate::utils::{
+  calculate_rewards, 
+  calculate_bigger_holder_rewards, 
+  TREASURY_ADDRESS, 
+  BIGGER_HOLDER,
+  MINIMUM_DEPOSIT,
+};
 use crate::errors::PorkStakeError;
 use anchor_lang::prelude::*;
-use solana_program::pubkey;
 use anchor_spl::{
   associated_token::AssociatedToken,
   token::{ self, Mint, Token, TokenAccount, Transfer as SplTransfer }
 };
 
-const BIGGER_HOLDER: u64 = 10_000_000_000_000_000;
-const MINIMUM_DEPOSIT: u64 = 10_000_000_000_000;
-
-const TREASURY_ADDRESS: Pubkey = pubkey!("HMXh8po6J3c319NeqkXMrJYDJnTK69fvDhK5p6KDWLgJ");
-const PORK_MINT_ADDRESS: Pubkey = pubkey!("HMXh8po6J3c319NeqkXMrJYDJnTK69fvDhK5p6KDWLgJ");
 
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 
@@ -27,13 +27,19 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
   let stake = &mut ctx.accounts.pork_stake;
   let user = &mut ctx.accounts.pork_user;
 
-  let current_timestamp = Clock::get()?.unix_timestamp;
-
-
   let deposit_amount: u64 = (amount / 100 * 95).try_into().unwrap();
   let treasury_amount: u64 = (amount / 100 * 5).try_into().unwrap();
 
+  if let Some(referral_user) = &mut ctx.accounts.referral_user {
+    if user.deposted_amount == 0 {
+      let referral_amount: u64 = (deposit_amount / 5).try_into().unwrap();
+      referral_user.claimable_amount += referral_amount;
+    }
+  } 
+
   stake.total_amount += deposit_amount;
+
+  let current_timestamp = Clock::get()?.unix_timestamp;
 
   if user.deposted_amount == 0 {
     user.deposted_amount = deposit_amount;

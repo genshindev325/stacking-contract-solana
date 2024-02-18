@@ -1,7 +1,13 @@
 use anchor_lang::prelude::*;
+use solana_program::pubkey;
 
 const PERCENT: u64 = 2;
 const BIGGER_HOLDER_PERCENT: u64 = 5;
+pub const TREASURY_ADDRESS: Pubkey = pubkey!("HMXh8po6J3c319NeqkXMrJYDJnTK69fvDhK5p6KDWLgJ");
+pub const PORK_MINT_ADDRESS: Pubkey = pubkey!("HMXh8po6J3c319NeqkXMrJYDJnTK69fvDhK5p6KDWLgJ");
+
+pub const BIGGER_HOLDER: u64 = 10_000_000_000_000_000;
+pub const MINIMUM_DEPOSIT: u64 = 10_000_000_000_000;
 
 pub fn calculate_rewards(
     amount: u64,

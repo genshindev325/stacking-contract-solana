@@ -1,16 +1,22 @@
 use crate::state::stake::*;
 use crate::state::user::*;
-use crate::utils::calculate_rewards;
+use crate::utils::{
+  calculate_rewards, 
+  calculate_bigger_holder_rewards,
+  TREASURY_ADDRESS
+};
 use anchor_lang::prelude::*;
 use anchor_spl::{
   associated_token::AssociatedToken,
   token::{ self, Mint, Token, TokenAccount, Transfer as SplTransfer }
 };
 
+
 pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   
   let destination = &ctx.accounts.to_ata;
   let source = &ctx.accounts.stake_ata;
+  let treasury = &ctx.accounts.treasury_ata;
   let token_program = &ctx.accounts.token_program;
   let authority = &ctx.accounts.pork_stake;
   let user = &mut ctx.accounts.pork_user;
@@ -20,24 +26,44 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   let current_timestamp = Clock::get()?.unix_timestamp;
 
   amount += calculate_rewards(user.deposted_amount, user.last_deposit_timestamp, current_timestamp);
+
+  if user.times_of_bigger_holder > 0 {
+    user.claimable_amount += calculate_bigger_holder_rewards(authority.total_amount, user.times_of_bigger_holder, user.bigger_holder_timestamp, current_timestamp);
+    user.bigger_holder_timestamp = current_timestamp;
+  }
+
   user.claimable_amount = 0;
   
   user.last_deposit_timestamp = current_timestamp;
 
-  // Transfer tokens from taker to initializer
-  let cpi_accounts = SplTransfer {
-      from: source.to_account_info().clone(),
-      to: destination.to_account_info().clone(),
-      authority: authority.to_account_info().clone(),
-  };
-  let cpi_program = token_program.to_account_info();
+  let deposit_amount: u64 = (amount / 100 * 95).try_into().unwrap();
+  let treasury_amount: u64 = (amount / 100 * 5).try_into().unwrap();
   
   token::transfer(
-      CpiContext::new_with_signer(
-          cpi_program, 
-          cpi_accounts, 
-          &[&["pork".as_bytes(), &[stake_bump]]]),
-      amount.try_into().unwrap())?;
+    CpiContext::new_with_signer(
+        token_program.to_account_info(),
+        SplTransfer {
+          from: source.to_account_info().clone(),
+          to: destination.to_account_info().clone(),
+          authority: authority.to_account_info().clone(),
+        },
+        &[&["pork".as_bytes(), &[stake_bump]]],
+    ),
+    deposit_amount
+  )?;
+
+  token::transfer(
+    CpiContext::new_with_signer(
+        token_program.to_account_info(),
+        SplTransfer {
+          from: source.to_account_info().clone(),
+          to: treasury.to_account_info().clone(),
+          authority: authority.to_account_info().clone(),
+        },
+        &[&["pork".as_bytes(), &[stake_bump]]],
+    ),
+    treasury_amount
+  )?;
   Ok(())
 }
 
@@ -80,6 +106,13 @@ pub struct CashOut<'info> {
     bump,
   )]
   pub pork_user: Account<'info, PorkUser>,
+
+  #[account(
+    mut, 
+    associated_token::mint = pork_mint,
+    associated_token::authority = TREASURY_ADDRESS,
+  )]
+  pub treasury_ata: Account<'info, TokenAccount>,
   
   pub token_program: Program<'info, Token>,
   pub associated_token_program: Program<'info, AssociatedToken>,
