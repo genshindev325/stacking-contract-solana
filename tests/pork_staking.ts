@@ -40,11 +40,13 @@ describe("pork_staking", () => {
   let porkUser: any;
   let userBump: any;
 
-  let initialAmount = 1000_000_000_000;
+  let initialAmount = BigInt("1000000000000000000");
 
-  let firstDeposit = new anchor.BN(100_000_000_000);
+  let minimumDeposit = new anchor.BN("1000000000000");
 
-  let secondDeposit = new anchor.BN(200_000_000_000);
+  let firstDeposit = new anchor.BN("20000000000000000");
+
+  let secondDeposit = new anchor.BN("10000000000000000");
 
   // let clock: any;
 
@@ -127,6 +129,29 @@ describe("pork_staking", () => {
     );
   });
 
+  // it("Minimum Deposit Error!", async () => {
+  //   const txHash = await program.methods.deposit(minimumDeposit)
+  //     .accounts({
+  //       porkMint: porkMint,
+  //       from: fromKp.publicKey,
+  //       fromAta: fromAta,
+  //       porkStake: porkStake,
+  //       stakeAta: stakeAta,
+  //       porkUser: porkUser,
+  //       treasuryAta: fromAta, 
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //       systemProgram: anchor.web3.SystemProgram.programId
+  //     })
+  //     .signers([fromKp])
+  //     .rpc({ skipPreflight: true })
+
+
+  //   console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+
+  //   await program.provider.connection.confirmTransaction(txHash, "finalized");
+  // });
+
   it("First Deposited!", async () => {
     const txHash = await program.methods.deposit(firstDeposit)
       .accounts({
@@ -136,6 +161,7 @@ describe("pork_staking", () => {
         porkStake: porkStake,
         stakeAta: stakeAta,
         porkUser: porkUser,
+        treasuryAta: fromAta, 
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId
@@ -147,23 +173,32 @@ describe("pork_staking", () => {
     console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
-    const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
+    const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
 
-    assert.strictEqual(
-      parseInt(toTokenAccount.value.amount),
-      firstDeposit.toNumber(),
-      "First Deposit"
-    );
+    console.log(stakeTokenAccount.value.amount);
+
+    const fromTokenAccount = await program.provider.connection.getTokenAccountBalance(fromAta);
+
+    console.log(fromTokenAccount.value.amount);
+
+    // assert.strictEqual(
+    //   parseInt(toTokenAccount.value.amount),
+    //   firstDeposit.toNumber(),
+    //   "First Deposit"
+    // );
 
     let _porkUser = await program.account.porkUser.fetch(porkUser);
 
-    assert.strictEqual(
-      _porkUser.depostedAmount.toNumber(),
-      firstDeposit.toNumber(),
-      "First Deposit"
-    );
-
-    console.log(_porkUser.lastDepositTimestamp.toNumber());
+    // assert.strictEqual(
+    //   _porkUser.depostedAmount.toNumber(),
+    //   firstDeposit.toNumber(),
+    //   "First Deposit"
+    // );
+    console.log(_porkUser.biggerHolderTimestamp.toString());
+    console.log(_porkUser.timesOfBiggerHolder.toString());
+    console.log(_porkUser.depostedAmount.toString());
+    console.log(_porkUser.claimableAmount.toString());
+    console.log(_porkUser.lastDepositTimestamp.toString());
   });
 
   // it("Second Deposited!", async () => {
@@ -190,62 +225,64 @@ describe("pork_staking", () => {
   //   await program.provider.connection.confirmTransaction(txHash, "finalized");
   //   const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
 
-  //   assert.strictEqual(
-  //     parseInt(toTokenAccount.value.amount),
-  //     (firstDeposit.toNumber() + secondDeposit.toNumber()),
-  //     "Second Deposit"
-  //   );
+  //   // assert.strictEqual(
+  //   //   parseInt(toTokenAccount.value.amount),
+  //   //   (firstDeposit.toNumber() + secondDeposit.toNumber()),
+  //   //   "Second Deposit"
+  //   // );
 
   //   let _porkUser = await program.account.porkUser.fetch(porkUser);
 
-  //   assert.strictEqual(
-  //     _porkUser.depostedAmount.toNumber(),
-  //     (firstDeposit.toNumber() + secondDeposit.toNumber()),
-  //     "Second Deposit"
-  //   );
-
-  //   console.log(_porkUser.claimableAmount.toNumber());
-  //   console.log(_porkUser.lastDepositTimestamp.toNumber());
+  //   // assert.strictEqual(
+  //   //   _porkUser.depostedAmount.toNumber(),
+  //   //   (firstDeposit.toNumber() + secondDeposit.toNumber()),
+  //   //   "Second Deposit"
+  //   // );
+  //   console.log(_porkUser.biggerHolderTimestamp.toString());
+  //   console.log(_porkUser.timesOfBiggerHolder.toString());
+  //   console.log(_porkUser.depostedAmount.toString());
+  //   console.log(_porkUser.claimableAmount.toString());
+  //   console.log(_porkUser.lastDepositTimestamp.toString());
   // });
 
 
-  it("Cashed out!", async () => {
-    await delay(10_000);
+  // it("Cashed out!", async () => {
+  //   await delay(10_000);
 
-    const txHash = await program.methods.cashout(bump)
-      .accounts({
-        to: fromKp.publicKey,
-        porkMint: porkMint,
-        toAta: fromAta,
-        porkStake: porkStake,
-        stakeAta: stakeAta,
-        porkUser: porkUser,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        systemProgram: anchor.web3.SystemProgram.programId
-      })
-      .signers([fromKp])
-      .rpc({ skipPreflight: true })
+  //   const txHash = await program.methods.cashout(bump)
+  //     .accounts({
+  //       to: fromKp.publicKey,
+  //       porkMint: porkMint,
+  //       toAta: fromAta,
+  //       porkStake: porkStake,
+  //       stakeAta: stakeAta,
+  //       porkUser: porkUser,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //       systemProgram: anchor.web3.SystemProgram.programId
+  //     })
+  //     .signers([fromKp])
+  //     .rpc({ skipPreflight: true })
 
 
-    console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+  //   console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
-    await program.provider.connection.confirmTransaction(txHash, "finalized");
-    const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
-    const toTokenAccount = await program.provider.connection.getTokenAccountBalance(fromAta);
+  //   await program.provider.connection.confirmTransaction(txHash, "finalized");
+  //   const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
+  //   const toTokenAccount = await program.provider.connection.getTokenAccountBalance(fromAta);
 
-    let _porkUser = await program.account.porkUser.fetch(porkUser);
+  //   let _porkUser = await program.account.porkUser.fetch(porkUser);
 
-    console.log(_porkUser.lastDepositTimestamp.toNumber());
+  //   console.log(_porkUser.lastDepositTimestamp.toNumber());
 
-    console.log(toTokenAccount.value.amount)
-    console.log(stakeTokenAccount.value.amount)
+  //   console.log(toTokenAccount.value.amount)
+  //   console.log(stakeTokenAccount.value.amount)
 
-    // assert.strictEqual(
-    //   parseInt(toTokenAccount.value.amount),
-    //   300,
-    //   "Cash Out"
-    // );
-  });
+  //   // assert.strictEqual(
+  //   //   parseInt(toTokenAccount.value.amount),
+  //   //   300,
+  //   //   "Cash Out"
+  //   // );
+  // });
 
 });

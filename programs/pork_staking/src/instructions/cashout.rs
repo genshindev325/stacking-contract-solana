@@ -37,7 +37,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
           cpi_program, 
           cpi_accounts, 
           &[&["pork".as_bytes(), &[stake_bump]]]),
-      amount)?;
+      amount.try_into().unwrap())?;
   Ok(())
 }
 
