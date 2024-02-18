@@ -20,8 +20,8 @@ pub mod pork_staking {
         instructions::deposit::deposit(ctx, amount)
     }
 
-    pub fn cashout(ctx: Context<CashOut>, stake_bump: u8, amount: u64) -> Result<()> {
-        instructions::cashout::cashout(ctx, stake_bump, amount)
+    pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
+        instructions::cashout::cashout(ctx, stake_bump)
     }
 }
 

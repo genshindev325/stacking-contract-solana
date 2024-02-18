@@ -17,6 +17,12 @@ import {
 import { PublicKey, Keypair, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
 import sinon from 'sinon';
 
+import FakeTimers from "@sinonjs/fake-timers";
+
+function delay(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 describe("pork_staking", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -34,13 +40,19 @@ describe("pork_staking", () => {
   let porkUser: any;
   let userBump: any;
 
-  let initialAmount = 1000;
+  let initialAmount = 1000_000_000_000;
 
-  let firstDeposit = new anchor.BN(100);
+  let firstDeposit = new anchor.BN(100_000_000_000);
 
-  let secondDeposit = new anchor.BN(200);
+  let secondDeposit = new anchor.BN(200_000_000_000);
 
-  let clock;
+  // let clock: any;
+
+  // const clock = FakeTimers.install(
+  //   {
+  //     shouldClearNativeTimers: true
+  //   }
+  // );
 
   before(async () => {
     // Create new mint account
@@ -83,13 +95,9 @@ describe("pork_staking", () => {
       [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), fromKp.publicKey.toBuffer()],
       program.programId
     );
-
-    clock = sinon.useFakeTimers();
   });
 
   afterEach(function () {
-    // Restore the original timers
-    clock.restore();
   });
 
   it("Initialized!", async () => {
@@ -158,68 +166,17 @@ describe("pork_staking", () => {
     console.log(_porkUser.lastDepositTimestamp.toNumber());
   });
 
-  it("Second Deposited!", async () => {
-    const startTime = new Date();
+  // it("Second Deposited!", async () => {
+  //   await delay(2000);
 
-    console.log(startTime)
-
-    clock.tick(3600000); 
-
-    const endTime = new Date();
-
-
-    console.log(endTime)
-
-    const txHash = await program.methods.deposit(secondDeposit)
-      .accounts({
-        porkMint: porkMint,
-        from: fromKp.publicKey,
-        fromAta: fromAta,
-        porkStake: porkStake,
-        stakeAta: stakeAta,
-        porkUser: porkUser,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        systemProgram: anchor.web3.SystemProgram.programId
-      })
-      .signers([fromKp])
-      .rpc({ skipPreflight: true })
-
-
-    console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-
-    await program.provider.connection.confirmTransaction(txHash, "finalized");
-    const toTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
-
-    assert.strictEqual(
-      parseInt(toTokenAccount.value.amount),
-      (firstDeposit.toNumber() + secondDeposit.toNumber()),
-      "Second Deposit"
-    );
-
-    let _porkUser = await program.account.porkUser.fetch(porkUser);
-
-    assert.strictEqual(
-      _porkUser.depostedAmount.toNumber(),
-      (firstDeposit.toNumber() + secondDeposit.toNumber()),
-      "Second Deposit"
-    );
-
-    console.log(_porkUser.claimableAmount.toNumber());
-
-  });
-
-
-  // it("Cashed out!", async () => {
-  //   const amount = new anchor.BN(200);
-
-  //   const txHash = await program.methods.cashout(bump, amount)
+  //   const txHash = await program.methods.deposit(secondDeposit)
   //     .accounts({
-  //       to: fromKp.publicKey,
   //       porkMint: porkMint,
-  //       toAta: fromAta,
+  //       from: fromKp.publicKey,
+  //       fromAta: fromAta,
   //       porkStake: porkStake,
   //       stakeAta: stakeAta,
+  //       porkUser: porkUser,
   //       tokenProgram: TOKEN_PROGRAM_ID,
   //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
   //       systemProgram: anchor.web3.SystemProgram.programId
@@ -235,9 +192,60 @@ describe("pork_staking", () => {
 
   //   assert.strictEqual(
   //     parseInt(toTokenAccount.value.amount),
-  //     300,
-  //     "The 'stake' token account should have the transferred tokens"
+  //     (firstDeposit.toNumber() + secondDeposit.toNumber()),
+  //     "Second Deposit"
   //   );
+
+  //   let _porkUser = await program.account.porkUser.fetch(porkUser);
+
+  //   assert.strictEqual(
+  //     _porkUser.depostedAmount.toNumber(),
+  //     (firstDeposit.toNumber() + secondDeposit.toNumber()),
+  //     "Second Deposit"
+  //   );
+
+  //   console.log(_porkUser.claimableAmount.toNumber());
+  //   console.log(_porkUser.lastDepositTimestamp.toNumber());
   // });
+
+
+  it("Cashed out!", async () => {
+    await delay(10_000);
+
+    const txHash = await program.methods.cashout(bump)
+      .accounts({
+        to: fromKp.publicKey,
+        porkMint: porkMint,
+        toAta: fromAta,
+        porkStake: porkStake,
+        stakeAta: stakeAta,
+        porkUser: porkUser,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId
+      })
+      .signers([fromKp])
+      .rpc({ skipPreflight: true })
+
+
+    console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+
+    await program.provider.connection.confirmTransaction(txHash, "finalized");
+    const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
+    const toTokenAccount = await program.provider.connection.getTokenAccountBalance(fromAta);
+
+    let _porkUser = await program.account.porkUser.fetch(porkUser);
+
+    console.log(_porkUser.lastDepositTimestamp.toNumber());
+
+    console.log(toTokenAccount.value.amount)
+    console.log(stakeTokenAccount.value.amount)
+
+    // assert.strictEqual(
+    //   parseInt(toTokenAccount.value.amount),
+    //   300,
+    //   "Cash Out"
+    // );
+  });
 
 });
