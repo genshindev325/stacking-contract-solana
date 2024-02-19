@@ -3,7 +3,8 @@ use crate::state::user::*;
 use crate::utils::{
   calculate_rewards, 
   calculate_bigger_holder_rewards,
-  TREASURY_ADDRESS
+  TREASURY_ADDRESS,
+  PORK_MINT_ADDRESS,
 };
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -74,6 +75,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
 pub struct CashOut<'info> {
   
   /// JOHN PORK Token Mint Address
+  #[account(address = PORK_MINT_ADDRESS)]
   pub pork_mint: Account<'info, Mint>,
 
   #[account(mut)]
