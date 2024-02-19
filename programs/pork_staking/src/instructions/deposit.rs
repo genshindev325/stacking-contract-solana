@@ -18,6 +18,7 @@ use anchor_spl::{
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 
   require_gte!(amount, MINIMUM_DEPOSIT, PorkStakeError::MinimumDepositError);
+  require_keys_neq!(ctx.accounts.from.key(), ctx.accounts.referral.key(), PorkStakeError::ReferralError);
 
   let destination = &ctx.accounts.stake_ata;
   let source = &ctx.accounts.from_ata;
@@ -31,6 +32,7 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
   let treasury_amount: u64 = (amount / 100 * 5).try_into().unwrap();
 
   if let Some(referral_user) = &mut ctx.accounts.referral_user {
+
     if user.deposted_amount == 0 {
       let referral_amount: u64 = (deposit_amount / 5).try_into().unwrap();
       referral_user.claimable_amount += referral_amount;
@@ -136,10 +138,8 @@ pub struct Deposit<'info> {
   )]
   pub treasury_ata: Account<'info, TokenAccount>,
 
-  /// CHECK: AccountInfo is an unchecked account, any account can be passed in
-  pub referral: UncheckedAccount<'info>,
+  pub referral: SystemAccount<'info>,
 
-  /// CHECK: This is an optional account which may or may not be provided
   #[account(
     mut,
     seeds = ["porkuser".as_bytes(), referral.key().as_ref()],

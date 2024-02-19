@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
 use instructions::*;
 
+pub mod errors;
 pub mod instructions;
 pub mod state;
-pub mod errors;
 pub mod utils;
 
 declare_id!("CUEpHJ5D7yEHtQDf5zwRdWTtkxKgB98gaMPoHkBzfZUP");
@@ -23,5 +23,8 @@ pub mod pork_staking {
     pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
         instructions::cashout::cashout(ctx, stake_bump)
     }
-}
 
+    pub fn compound(ctx: Context<Compound>, _stake_bump: u8) -> Result<()> {
+        instructions::compound::compound(ctx, _stake_bump)
+    }
+}

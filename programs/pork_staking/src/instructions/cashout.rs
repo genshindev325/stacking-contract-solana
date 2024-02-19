@@ -18,7 +18,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   let source = &ctx.accounts.stake_ata;
   let treasury = &ctx.accounts.treasury_ata;
   let token_program = &ctx.accounts.token_program;
-  let authority = &ctx.accounts.pork_stake;
+  let stake = &mut ctx.accounts.pork_stake;
   let user = &mut ctx.accounts.pork_user;
 
   let mut amount: u64 = user.claimable_amount;
@@ -28,13 +28,15 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   amount += calculate_rewards(user.deposted_amount, user.last_deposit_timestamp, current_timestamp);
 
   if user.times_of_bigger_holder > 0 {
-    user.claimable_amount += calculate_bigger_holder_rewards(authority.total_amount, user.times_of_bigger_holder, user.bigger_holder_timestamp, current_timestamp);
+    amount += calculate_bigger_holder_rewards(stake.total_amount, user.times_of_bigger_holder, user.bigger_holder_timestamp, current_timestamp);
     user.bigger_holder_timestamp = current_timestamp;
   }
 
   user.claimable_amount = 0;
   
   user.last_deposit_timestamp = current_timestamp;
+
+  stake.total_amount -= amount;
 
   let deposit_amount: u64 = (amount / 100 * 95).try_into().unwrap();
   let treasury_amount: u64 = (amount / 100 * 5).try_into().unwrap();
@@ -45,7 +47,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
         SplTransfer {
           from: source.to_account_info().clone(),
           to: destination.to_account_info().clone(),
-          authority: authority.to_account_info().clone(),
+          authority: stake.to_account_info().clone(),
         },
         &[&["pork".as_bytes(), &[stake_bump]]],
     ),
@@ -58,7 +60,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
         SplTransfer {
           from: source.to_account_info().clone(),
           to: treasury.to_account_info().clone(),
-          authority: authority.to_account_info().clone(),
+          authority: stake.to_account_info().clone(),
         },
         &[&["pork".as_bytes(), &[stake_bump]]],
     ),
