@@ -5,10 +5,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-pork_staking = "7a2ExM7n8CSK2ai1JzsP5pzGrvauy2BZ9kUmZA3zQTs6"
+pork_staking = "FhWWsKM5erDU1xbhkpZayeieAXhGXauKZWKmRjEL9BZW"
 
 [programs.devnet]
-pork_staking = "7a2ExM7n8CSK2ai1JzsP5pzGrvauy2BZ9kUmZA3zQTs6"
+pork_staking = "FhWWsKM5erDU1xbhkpZayeieAXhGXauKZWKmRjEL9BZW"
 
 [registry]
 url = "https://api.apr.dev"
