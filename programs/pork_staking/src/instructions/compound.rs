@@ -1,5 +1,6 @@
 use crate::state::stake::*;
 use crate::state::user::*;
+use crate::errors::PorkStakeError;
 use crate::utils::{
   calculate_rewards, 
   calculate_bigger_holder_rewards,
@@ -7,7 +8,7 @@ use crate::utils::{
 use anchor_lang::prelude::*;
 
 
-pub fn compound(ctx: Context<Compound>, _stake_bump: u8) -> Result<()> {
+pub fn compound(ctx: Context<Compound>) -> Result<()> {
   
   let stake = &mut ctx.accounts.pork_stake;
   let user = &mut ctx.accounts.pork_user;
@@ -15,6 +16,8 @@ pub fn compound(ctx: Context<Compound>, _stake_bump: u8) -> Result<()> {
   let mut amount: u64 = user.claimable_amount;
 
   let current_timestamp = Clock::get()?.unix_timestamp;
+
+  require_gte!(current_timestamp, user.last_deposit_timestamp + 10, PorkStakeError::ClaimOrCompoundEveryHourError);
 
   amount += calculate_rewards(user.deposted_amount, user.last_deposit_timestamp, current_timestamp);
 
@@ -33,7 +36,6 @@ pub fn compound(ctx: Context<Compound>, _stake_bump: u8) -> Result<()> {
 }
 
 #[derive(Accounts)]
-#[instruction(_stake_bump: u8)]
 pub struct Compound<'info> {
   #[account(mut)]
   pub signer: Signer<'info>,
@@ -41,7 +43,7 @@ pub struct Compound<'info> {
   #[account(
       mut,  
       seeds = ["pork".as_bytes()],
-      bump = _stake_bump,
+      bump,
   )]
   pub pork_stake: Account<'info, PorkStake>,
 

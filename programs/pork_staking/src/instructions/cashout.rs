@@ -6,6 +6,7 @@ use crate::utils::{
   TREASURY_ADDRESS,
   PORK_MINT_ADDRESS,
 };
+use crate::errors::PorkStakeError;
 use anchor_lang::prelude::*;
 use anchor_spl::{
   associated_token::AssociatedToken,
@@ -25,6 +26,8 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   let mut amount: u64 = user.claimable_amount;
 
   let current_timestamp = Clock::get()?.unix_timestamp;
+
+  require_gte!(current_timestamp, user.last_deposit_timestamp + 10, PorkStakeError::ClaimOrCompoundEveryHourError);
 
   amount += calculate_rewards(user.deposted_amount, user.last_deposit_timestamp, current_timestamp);
 
@@ -74,14 +77,12 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
 #[instruction(stake_bump: u8)]
 pub struct CashOut<'info> {
   
-  /// JOHN PORK Token Mint Address
-  #[account(address = PORK_MINT_ADDRESS)]
+  // #[account(address = PORK_MINT_ADDRESS)]
   pub pork_mint: Account<'info, Mint>,
 
   #[account(mut)]
   pub to: Signer<'info>,
 
-  // ATA of JOHN PORK Token Mint
   #[account(
       init_if_needed, 
       payer = to, 

@@ -24,7 +24,7 @@ pub mod pork_staking {
         instructions::cashout::cashout(ctx, stake_bump)
     }
 
-    pub fn compound(ctx: Context<Compound>, _stake_bump: u8) -> Result<()> {
-        instructions::compound::compound(ctx, _stake_bump)
+    pub fn compound(ctx: Context<Compound>) -> Result<()> {
+        instructions::compound::compound(ctx)
     }
 }
