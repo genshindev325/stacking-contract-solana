@@ -9,7 +9,7 @@ use crate::utils::PORK_MINT_ADDRESS;
 
 pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
 
-  require_keys_eq!(ctx.accounts.pork_mint.key(), PORK_MINT_ADDRESS, PorkStakeError::PorkMintError);
+  // require_keys_eq!(ctx.accounts.pork_mint.key(), PORK_MINT_ADDRESS, PorkStakeError::PorkMintError);
   
   let stake = &mut ctx.accounts.pork_stake;
   

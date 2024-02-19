@@ -4,7 +4,6 @@ import { PorkStaking } from "../target/types/pork_staking";
 import { assert } from "chai";
 
 import secret from '../wallet.json';
-import secondSecret from '../second_wallet.json';
 
 import {
   createMint,
