@@ -19,6 +19,7 @@ use anchor_spl::{
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 
   require_gte!(amount, MINIMUM_DEPOSIT, PorkStakeError::MinimumDepositError);
+  require_keys_eq!(ctx.accounts.pork_mint.key(), PORK_MINT_ADDRESS, PorkStakeError::PorkMintError);
   require_keys_neq!(ctx.accounts.from.key(), ctx.accounts.referral.key(), PorkStakeError::ReferralError);
 
   let destination = &ctx.accounts.stake_ata;
@@ -95,7 +96,6 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 #[derive(Accounts)]
 pub struct Deposit<'info> {
   
-  #[account(address = PORK_MINT_ADDRESS)]
   pub pork_mint: Account<'info, Mint>,
 
   #[account(mut)]

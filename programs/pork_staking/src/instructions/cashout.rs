@@ -15,6 +15,8 @@ use anchor_spl::{
 
 
 pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
+
+  require_keys_eq!(ctx.accounts.pork_mint.key(), PORK_MINT_ADDRESS, PorkStakeError::PorkMintError);
   
   let destination = &ctx.accounts.to_ata;
   let source = &ctx.accounts.stake_ata;
@@ -79,7 +81,6 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
 #[instruction(stake_bump: u8)]
 pub struct CashOut<'info> {
   
-  #[account(address = PORK_MINT_ADDRESS)]
   pub pork_mint: Account<'info, Mint>,
 
   #[account(mut)]

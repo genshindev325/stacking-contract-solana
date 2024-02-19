@@ -1,12 +1,15 @@
 use crate::state::stake::*;
-// use crate::errors::PorkStakeError;
 use anchor_lang::prelude::*;
 use anchor_spl::{
   associated_token::AssociatedToken,
   token::{ Mint, Token, TokenAccount }
 };
+use crate::errors::PorkStakeError;
+use crate::utils::PORK_MINT_ADDRESS;
 
 pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+
+  require_keys_eq!(ctx.accounts.pork_mint.key(), PORK_MINT_ADDRESS, PorkStakeError::PorkMintError);
   
   let stake = &mut ctx.accounts.pork_stake;
   
@@ -17,7 +20,7 @@ pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-  
+
   pub pork_mint: Account<'info, Mint>,
 
   #[account(mut)]

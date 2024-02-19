@@ -6,4 +6,5 @@ pub enum PorkStakeError {
   MinimumDepositError,
   ReferralError,
   ClaimOrCompoundEveryHourError,
+  PorkMintError,
 }
