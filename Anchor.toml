@@ -5,16 +5,16 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-pork_staking = "CUEpHJ5D7yEHtQDf5zwRdWTtkxKgB98gaMPoHkBzfZUP"
+pork_staking = "2vuV5qE78W4gizwb7GBeyX9MtyUd1iFaeMNEYTmzWWAK"
 
 [programs.devnet]
-pork_staking = "CUEpHJ5D7yEHtQDf5zwRdWTtkxKgB98gaMPoHkBzfZUP"
+pork_staking = "2vuV5qE78W4gizwb7GBeyX9MtyUd1iFaeMNEYTmzWWAK"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/home/ubuntu/.config/solana/id.json"
 
 [scripts]

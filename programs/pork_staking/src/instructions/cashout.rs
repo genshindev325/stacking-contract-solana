@@ -42,8 +42,10 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
 
   stake.total_amount -= amount;
 
-  let deposit_amount: u64 = (amount / 100 * 95).try_into().unwrap();
+  let cashout_amount: u64 = (amount / 100 * 95).try_into().unwrap();
   let treasury_amount: u64 = (amount / 100 * 5).try_into().unwrap();
+
+  user.claimed_amount += cashout_amount;
   
   token::transfer(
     CpiContext::new_with_signer(
@@ -55,7 +57,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
         },
         &[&["pork".as_bytes(), &[stake_bump]]],
     ),
-    deposit_amount
+    cashout_amount
   )?;
 
   token::transfer(
