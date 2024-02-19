@@ -11,5 +11,5 @@ pub struct PorkUser {
 }
 
 impl PorkUser {
-  pub const LEN: usize = 8 + 8 * 6;
+  pub const LEN: usize = 8 + 8 + 8 + 8 + 8 + 8 + 8;
 }

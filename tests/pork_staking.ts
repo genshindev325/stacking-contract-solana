@@ -85,14 +85,6 @@ describe("pork_staking", () => {
   });
 
   it("Set Up!", async () => {
-    const connection = new Connection("https://rpc.hellomoon.io/0d85b056-7479-4f2f-9112-dd0eb04360ee");
-
-    const tokenMint = new PublicKey("2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy");
-
-    const tokenSupply = await connection.getTokenSupply(tokenMint);
-
-    console.log(tokenSupply)
-
     const signature1 = await program.provider.connection.requestAirdrop(
       firstKp.publicKey,
       3_000_000_000
@@ -282,7 +274,7 @@ describe("pork_staking", () => {
         porkStake: porkStake,
         stakeAta: stakeAta,
         porkUser: firstUser,
-        referral: firstKp.publicKey,
+        referral: secondKp.publicKey,
         referralUser: null,
         treasuryAta: treasuryAta,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -324,6 +316,7 @@ describe("pork_staking", () => {
     console.log("First User Deposited Amount: " + _porkUser.depostedAmount.toString());
     console.log("First User Claimable Amount: " + _porkUser.claimableAmount.toString());
     console.log("First User Last Deposited Timestamp: " + _porkUser.lastDepositTimestamp.toString());
+    console.log("First User Claimed Timestamp: " + _porkUser.claimedAmount.toString());
 
   });
 
@@ -508,67 +501,68 @@ describe("pork_staking", () => {
   // });
 
 
-  // it("Cashed out!", async () => {
-  //   await delay(10_000);
+  it("Cashed out!", async () => {
+    await delay(10_000);
 
-  //   const txHash = await program.methods.cashout(bump)
-  //     .accounts({
-  //       to: firstKp.publicKey,
-  //       porkMint: porkMint,
-  //       toAta: firstAta,
-  //       porkStake: porkStake,
-  //       stakeAta: stakeAta,
-  //       porkUser: firstUser,
-  //       treasuryAta: treasuryAta,
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //       systemProgram: anchor.web3.SystemProgram.programId
-  //     })
-  //     .signers([firstKp])
-  //     .rpc({ skipPreflight: true })
+    const txHash = await program.methods.cashout(bump)
+      .accounts({
+        to: firstKp.publicKey,
+        porkMint: porkMint,
+        toAta: firstAta,
+        porkStake: porkStake,
+        stakeAta: stakeAta,
+        porkUser: firstUser,
+        treasuryAta: treasuryAta,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId
+      })
+      .signers([firstKp])
+      .rpc({ skipPreflight: true })
 
 
-  //   console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+    console.log(`https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
-  //   await program.provider.connection.confirmTransaction(txHash, "finalized");
+    await program.provider.connection.confirmTransaction(txHash, "finalized");
 
-  //   const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
+    const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
 
-  //   console.log("Smart Contract: " + stakeTokenAccount.value.amount);
+    console.log("Smart Contract: " + stakeTokenAccount.value.amount);
 
-  //   const treasuryTokenAccount = await program.provider.connection.getTokenAccountBalance(treasuryAta);
+    const treasuryTokenAccount = await program.provider.connection.getTokenAccountBalance(treasuryAta);
 
-  //   console.log("Treasury Wallet: " + treasuryTokenAccount.value.amount);
+    console.log("Treasury Wallet: " + treasuryTokenAccount.value.amount);
 
-  //   const firstTokenAccount = await program.provider.connection.getTokenAccountBalance(firstAta);
+    const firstTokenAccount = await program.provider.connection.getTokenAccountBalance(firstAta);
 
-  //   console.log("First Wallet: " + firstTokenAccount.value.amount);
+    console.log("First Wallet: " + firstTokenAccount.value.amount);
 
-  //   const secondTokenAccount = await program.provider.connection.getTokenAccountBalance(secondAta);
+    const secondTokenAccount = await program.provider.connection.getTokenAccountBalance(secondAta);
 
-  //   console.log("Second Wallet: " + secondTokenAccount.value.amount);
+    console.log("Second Wallet: " + secondTokenAccount.value.amount);
 
-  //   let _porkStake = await program.account.porkStake.fetch(porkStake);
+    let _porkStake = await program.account.porkStake.fetch(porkStake);
 
-  //   console.log("Smart Contract Deposited Amount: " + _porkStake.totalAmount.toString());
+    console.log("Smart Contract Deposited Amount: " + _porkStake.totalAmount.toString());
 
-  //   let _firstUser = await program.account.porkUser.fetch(firstUser);
+    let _firstUser = await program.account.porkUser.fetch(firstUser);
 
-  //   console.log("First User Bigger Holder Timestamp: " + _firstUser.biggerHolderTimestamp.toString());
-  //   console.log("First User Bigger Holder Times: " + _firstUser.timesOfBiggerHolder.toString());
-  //   console.log("First User Deposited Amount: " + _firstUser.depostedAmount.toString());
-  //   console.log("First User Claimable Amount: " + _firstUser.claimableAmount.toString());
-  //   console.log("First User Last Deposited Timestamp: " + _firstUser.lastDepositTimestamp.toString());
+    console.log("First User Bigger Holder Timestamp: " + _firstUser.biggerHolderTimestamp.toString());
+    console.log("First User Bigger Holder Times: " + _firstUser.timesOfBiggerHolder.toString());
+    console.log("First User Deposited Amount: " + _firstUser.depostedAmount.toString());
+    console.log("First User Claimable Amount: " + _firstUser.claimableAmount.toString());
+    console.log("First User Last Deposited Timestamp: " + _firstUser.lastDepositTimestamp.toString());
+    console.log("First User Claimed Timestamp: " + _firstUser.claimedAmount.toString());
 
-  //   let _secondUser = await program.account.porkUser.fetch(secondUser);
+    // let _secondUser = await program.account.porkUser.fetch(secondUser);
 
-  //   console.log("Second User Bigger Holder Timestamp: " + _secondUser.biggerHolderTimestamp.toString());
-  //   console.log("Second User Bigger Holder Times: " + _secondUser.timesOfBiggerHolder.toString());
-  //   console.log("Second User Deposited Amount: " + _secondUser.depostedAmount.toString());
-  //   console.log("Second User Claimable Amount: " + _secondUser.claimableAmount.toString());
-  //   console.log("Second User Last Deposited Timestamp: " + _secondUser.lastDepositTimestamp.toString());
+    // console.log("Second User Bigger Holder Timestamp: " + _secondUser.biggerHolderTimestamp.toString());
+    // console.log("Second User Bigger Holder Times: " + _secondUser.timesOfBiggerHolder.toString());
+    // console.log("Second User Deposited Amount: " + _secondUser.depostedAmount.toString());
+    // console.log("Second User Claimable Amount: " + _secondUser.claimableAmount.toString());
+    // console.log("Second User Last Deposited Timestamp: " + _secondUser.lastDepositTimestamp.toString());
     
-  // });
+  });
 
 });
 

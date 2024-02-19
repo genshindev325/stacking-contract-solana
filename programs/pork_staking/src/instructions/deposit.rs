@@ -95,7 +95,7 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
 #[derive(Accounts)]
 pub struct Deposit<'info> {
   
-  // #[account(address = PORK_MINT_ADDRESS)]
+  #[account(address = PORK_MINT_ADDRESS)]
   pub pork_mint: Account<'info, Mint>,
 
   #[account(mut)]
