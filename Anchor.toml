@@ -10,11 +10,14 @@ pork_staking = "5FVv4vXjWxenXoyGreTVXvqNoNWVnDrCCZnQPfvynhbj"
 [programs.devnet]
 pork_staking = "5FVv4vXjWxenXoyGreTVXvqNoNWVnDrCCZnQPfvynhbj"
 
+[programs.mainnet]
+pork_staking = "5FVv4vXjWxenXoyGreTVXvqNoNWVnDrCCZnQPfvynhbj"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "mainnet"
 wallet = "/home/ubuntu/.config/solana/id.json"
 
 [scripts]
