@@ -141,7 +141,9 @@ pub struct Deposit<'info> {
   pub referral: SystemAccount<'info>,
 
   #[account(
-    mut,
+    init_if_needed,
+    payer = from,
+    space=PorkUser::LEN,
     seeds = ["porkuser".as_bytes(), referral.key().as_ref()],
     bump,
   )]
