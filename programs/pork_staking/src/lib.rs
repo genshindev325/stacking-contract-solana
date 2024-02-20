@@ -6,7 +6,7 @@ pub mod instructions;
 pub mod state;
 pub mod utils;
 
-declare_id!("FhWWsKM5erDU1xbhkpZayeieAXhGXauKZWKmRjEL9BZW");
+declare_id!("5FVv4vXjWxenXoyGreTVXvqNoNWVnDrCCZnQPfvynhbj");
 
 #[program]
 pub mod pork_staking {
