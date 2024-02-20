@@ -39,10 +39,14 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   }
 
   user.claimable_amount = 0;
-  
   user.last_deposit_timestamp = current_timestamp;
 
-  stake.total_amount -= amount;
+  if stake.total_amount >= amount {
+    stake.total_amount -= amount;
+  } else {
+    amount = stake.total_amount;
+    stake.total_amount = 0;
+  }
 
   let cashout_amount: u64 = (amount / 100 * 95).try_into().unwrap();
   let treasury_amount: u64 = (amount / 100 * 5).try_into().unwrap();

@@ -4,6 +4,7 @@ use crate::errors::PorkStakeError;
 use crate::utils::{
   calculate_rewards, 
   calculate_bigger_holder_rewards,
+  BIGGER_HOLDER
 };
 use anchor_lang::prelude::*;
 
@@ -31,6 +32,12 @@ pub fn compound(ctx: Context<Compound>) -> Result<()> {
   user.last_deposit_timestamp = current_timestamp;
 
   user.deposted_amount += amount;
+
+  if user.deposted_amount >= BIGGER_HOLDER {
+    let times_of_bigger_holder: u64 = user.deposted_amount / BIGGER_HOLDER;
+    user.times_of_bigger_holder = times_of_bigger_holder;
+    user.bigger_holder_timestamp = current_timestamp;
+  }
 
   Ok(())
 }
