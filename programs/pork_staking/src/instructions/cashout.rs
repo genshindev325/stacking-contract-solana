@@ -44,6 +44,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
   if stake.total_amount >= amount {
     stake.total_amount -= amount;
   } else {
+    user.claimable_amount = amount - stake.total_amount;
     amount = stake.total_amount;
     stake.total_amount = 0;
   }

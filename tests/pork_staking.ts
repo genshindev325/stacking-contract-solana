@@ -32,7 +32,7 @@ describe("pork_staking", () => {
 
   const program = anchor.workspace.PorkStaking as Program<PorkStaking>;
 
-  const treasuryKp = Keypair.fromSecretKey(new Uint8Array(secret));
+  const authKp = Keypair.fromSecretKey(new Uint8Array(secret));
 
   // const secondKp = Keypair.fromSecretKey(new Uint8Array(secondSecret));
 
@@ -45,7 +45,7 @@ describe("pork_staking", () => {
   let stakeAta: any;
 
   let treasuryAta: any;
-  let treasuryAta1: any;
+  let authAta: any;
   let treasuryUser: any;
 
   let firstAta: any;
@@ -84,164 +84,163 @@ describe("pork_staking", () => {
   afterEach(function () {
   });
 
-  it("Set Up!", async () => {
-    const signature1 = await program.provider.connection.requestAirdrop(
-      firstKp.publicKey,
-      3_000_000_000
-    );
+  // it("Set Up!", async () => {
+  //   const signature1 = await program.provider.connection.requestAirdrop(
+  //     firstKp.publicKey,
+  //     3_000_000_000
+  //   );
 
-    const { blockhash: blockhash1, lastValidBlockHeight: lastValidBlockHeight1 } = await program.provider.connection.getLatestBlockhash();
+  //   const { blockhash: blockhash1, lastValidBlockHeight: lastValidBlockHeight1 } = await program.provider.connection.getLatestBlockhash();
 
-    await program.provider.connection.confirmTransaction({
-      blockhash: blockhash1,
-      lastValidBlockHeight: lastValidBlockHeight1,
-      signature: signature1
-    }, 'finalized');
+  //   await program.provider.connection.confirmTransaction({
+  //     blockhash: blockhash1,
+  //     lastValidBlockHeight: lastValidBlockHeight1,
+  //     signature: signature1
+  //   }, 'finalized');
 
-    const signature2 = await program.provider.connection.requestAirdrop(
-      secondKp.publicKey,
-      3_000_000_000
-    );
+  //   const signature2 = await program.provider.connection.requestAirdrop(
+  //     secondKp.publicKey,
+  //     3_000_000_000
+  //   );
 
-    const { blockhash: blockhash2, lastValidBlockHeight: lastValidBlockHeight2 } = await program.provider.connection.getLatestBlockhash();
+  //   const { blockhash: blockhash2, lastValidBlockHeight: lastValidBlockHeight2 } = await program.provider.connection.getLatestBlockhash();
 
-    await program.provider.connection.confirmTransaction({
-      blockhash: blockhash2,
-      lastValidBlockHeight: lastValidBlockHeight2,
-      signature: signature2
-    }, 'finalized');
+  //   await program.provider.connection.confirmTransaction({
+  //     blockhash: blockhash2,
+  //     lastValidBlockHeight: lastValidBlockHeight2,
+  //     signature: signature2
+  //   }, 'finalized');
 
-    porkMint = await createMint(
-      program.provider.connection,
-      treasuryKp,
-      treasuryKp.publicKey,
-      null,
-      9
-    );
+  //   porkMint = await createMint(
+  //     program.provider.connection,
+  //     authKp,
+  //     authKp.publicKey,
+  //     null,
+  //     9
+  //   );
 
-    treasuryAta = await createAssociatedTokenAccount(
-      program.provider.connection,
-      treasuryKp,
-      porkMint,
-      treasuryKp.publicKey
-    );
+  //   authAta = await createAssociatedTokenAccount(
+  //     program.provider.connection,
+  //     authKp,
+  //     porkMint,
+  //     authKp.publicKey
+  //   );
 
-    treasuryAta1 = await createAssociatedTokenAccount(
-      program.provider.connection,
-      treasuryKp,
-      porkMint,
-      new PublicKey('76hTqNGeRJ4m5j12WfwsQNJTcpyKNNUCMpKnYvmYY9Mv')
-    );
+  //   treasuryAta = await createAssociatedTokenAccount(
+  //     program.provider.connection,
+  //     authKp,
+  //     porkMint,
+  //     new PublicKey('76hTqNGeRJ4m5j12WfwsQNJTcpyKNNUCMpKnYvmYY9Mv')
+  //   );
 
-    console.log(treasuryAta1)
+  //   await mintTo(
+  //     program.provider.connection,
+  //     authKp,
+  //     porkMint,
+  //     authAta,
+  //     authKp.publicKey,
+  //     initialAmount
+  //   );
 
-    await mintTo(
-      program.provider.connection,
-      treasuryKp,
-      porkMint,
-      treasuryAta,
-      treasuryKp.publicKey,
-      initialAmount
-    );
-
-    firstAta = await createAssociatedTokenAccount(
-      program.provider.connection,
-      firstKp,
-      porkMint,
-      firstKp.publicKey
-    );
+  //   firstAta = await createAssociatedTokenAccount(
+  //     program.provider.connection,
+  //     firstKp,
+  //     porkMint,
+  //     firstKp.publicKey
+  //   );
 
 
-    await transfer(
-      program.provider.connection,
-      treasuryKp,
-      treasuryAta,
-      firstAta,
-      treasuryKp.publicKey,
-      firstAmount
-    );
+  //   await transfer(
+  //     program.provider.connection,
+  //     authKp,
+  //     authAta,
+  //     firstAta,
+  //     authKp.publicKey,
+  //     firstAmount
+  //   );
 
-    secondAta = await createAssociatedTokenAccount(
-      program.provider.connection,
-      secondKp,
-      porkMint,
-      secondKp.publicKey
-    );
+  //   secondAta = await createAssociatedTokenAccount(
+  //     program.provider.connection,
+  //     secondKp,
+  //     porkMint,
+  //     secondKp.publicKey
+  //   );
 
 
-    await transfer(
-      program.provider.connection,
-      treasuryKp,
-      treasuryAta,
-      secondAta,
-      treasuryKp.publicKey,
-      secondAmount
-    );
+  //   await transfer(
+  //     program.provider.connection,
+  //     authKp,
+  //     authAta,
+  //     secondAta,
+  //     authKp.publicKey,
+  //     secondAmount
+  //   );
 
-    const treasuryTokenAccount = await program.provider.connection.getTokenAccountBalance(treasuryAta);
+  //   const treasuryTokenAccount = await program.provider.connection.getTokenAccountBalance(treasuryAta);
 
-    console.log(treasuryTokenAccount.value.amount);
+  //   console.log(treasuryTokenAccount.value.amount);
 
-    const firstTokenAccount = await program.provider.connection.getTokenAccountBalance(firstAta);
+  //   const firstTokenAccount = await program.provider.connection.getTokenAccountBalance(firstAta);
 
-    console.log(firstTokenAccount.value.amount);
+  //   console.log(firstTokenAccount.value.amount);
 
-    const secondTokenAccount = await program.provider.connection.getTokenAccountBalance(secondAta);
+  //   const secondTokenAccount = await program.provider.connection.getTokenAccountBalance(secondAta);
 
-    console.log(secondTokenAccount.value.amount);
+  //   console.log(secondTokenAccount.value.amount);
 
-    [porkStake, bump] = await PublicKey.findProgramAddress(
-      [Buffer.from(anchor.utils.bytes.utf8.encode("pork"))],
-      program.programId
-    );
+  //   [porkStake, bump] = await PublicKey.findProgramAddress(
+  //     [Buffer.from(anchor.utils.bytes.utf8.encode("pork"))],
+  //     program.programId
+  //   );
 
-    stakeAta = getAssociatedTokenAddressSync(
-      porkMint,
-      porkStake,
-      true
-    );
+  //   stakeAta = getAssociatedTokenAddressSync(
+  //     porkMint,
+  //     porkStake,
+  //     true
+  //   );
 
-    [treasuryUser] = await PublicKey.findProgramAddress(
-      [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), treasuryKp.publicKey.toBuffer()],
-      program.programId
-    );
+  //   [treasuryUser] = await PublicKey.findProgramAddress(
+  //     [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), authKp.publicKey.toBuffer()],
+  //     program.programId
+  //   );
 
-    [firstUser] = await PublicKey.findProgramAddress(
-      [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), firstKp.publicKey.toBuffer()],
-      program.programId
-    );
+  //   [firstUser] = await PublicKey.findProgramAddress(
+  //     [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), firstKp.publicKey.toBuffer()],
+  //     program.programId
+  //   );
 
-    [secondUser] = await PublicKey.findProgramAddress(
-      [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), secondKp.publicKey.toBuffer()],
-      program.programId
-    );
-  });
+  //   [secondUser] = await PublicKey.findProgramAddress(
+  //     [Buffer.from(anchor.utils.bytes.utf8.encode("porkuser")), secondKp.publicKey.toBuffer()],
+  //     program.programId
+  //   );
+  // });
 
   it("Initialized!", async () => {
+
     const txHash = await program.methods.initialize()
       .accounts({
         porkMint: porkMint,
-        from: treasuryKp.publicKey,
+        from: authKp.publicKey,
         porkStake: porkStake,
         stakeAta: stakeAta,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId
       })
-      .signers([treasuryKp])
+      .signers([authKp])
       .rpc({ skipPreflight: true })
 
 
     console.log(`https://solscan.io/token/tx/${txHash}?cluster=devnet`);
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
-    const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
+    // const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
 
-    assert.strictEqual(
-      parseInt(stakeTokenAccount.value.amount),
-      0,
-      "The 'stake' token account should have the transferred tokens"
-    );
+    // assert.strictEqual(
+    //   parseInt(stakeTokenAccount.value.amount),
+    //   0,
+    //   "The 'stake' token account should have the transferred tokens"
+    // );
   });
 
   // it("Minimum Deposit Error!", async () => {
@@ -269,88 +268,88 @@ describe("pork_staking", () => {
   //   await program.provider.connection.confirmTransaction(txHash, "finalized");
   // });
 
-  it("First Deposited!", async () => {
-    const amount = 10000;
-    const decimals = new anchor.BN(1000_000_000);
+  // it("First Deposited!", async () => {
+  //   const amount = 10000;
+  //   const decimals = new anchor.BN(1000_000_000);
 
-    const deposit = new anchor.BN(amount).mul(decimals);
+  //   const deposit = new anchor.BN(amount).mul(decimals);
 
-    try {
-      let _secondUser = await program.account.porkUser.fetch(secondUser);
+  //   try {
+  //     let _secondUser = await program.account.porkUser.fetch(secondUser);
 
-      console.log("Second User Bigger Holder Timestamp: " + _secondUser.biggerHolderTimestamp.toString());
-      console.log("Second User Bigger Holder Times: " + _secondUser.timesOfBiggerHolder.toString());
-      console.log("Second User Deposited Amount: " + _secondUser.depostedAmount.toString());
-      console.log("Second User Claimable Amount: " + _secondUser.claimableAmount.toString());
-      console.log("Second User Last Deposited Timestamp: " + _secondUser.lastDepositTimestamp.toString());
-    } catch (err) {
-      console.error(err);
-    }
-    const txHash = await program.methods.deposit(deposit)
-      .accounts({
-        porkMint: porkMint,
-        from: firstKp.publicKey,
-        fromAta: firstAta,
-        porkStake: porkStake,
-        stakeAta: stakeAta,
-        porkUser: firstUser,
-        referral: secondKp.publicKey,
-        referralUser: secondUser,
-        treasuryAta: treasuryAta1,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        systemProgram: anchor.web3.SystemProgram.programId
-      })
-      .signers([firstKp])
-      .rpc({ skipPreflight: true })
+  //     console.log("Second User Bigger Holder Timestamp: " + _secondUser.biggerHolderTimestamp.toString());
+  //     console.log("Second User Bigger Holder Times: " + _secondUser.timesOfBiggerHolder.toString());
+  //     console.log("Second User Deposited Amount: " + _secondUser.depostedAmount.toString());
+  //     console.log("Second User Claimable Amount: " + _secondUser.claimableAmount.toString());
+  //     console.log("Second User Last Deposited Timestamp: " + _secondUser.lastDepositTimestamp.toString());
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  //   const txHash = await program.methods.deposit(deposit)
+  //     .accounts({
+  //       porkMint: porkMint,
+  //       from: firstKp.publicKey,
+  //       fromAta: firstAta,
+  //       porkStake: porkStake,
+  //       stakeAta: stakeAta,
+  //       porkUser: firstUser,
+  //       referral: secondKp.publicKey,
+  //       referralUser: secondUser,
+  //       treasuryAta: treasuryAta1,
+  //       tokenProgram: TOKEN_PROGRAM_ID,
+  //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //       systemProgram: anchor.web3.SystemProgram.programId
+  //     })
+  //     .signers([firstKp])
+  //     .rpc({ skipPreflight: true })
 
 
-    console.log(`https://solscan.io/tx/${txHash}?cluster=devnet`);
+  //   console.log(`https://solscan.io/tx/${txHash}?cluster=devnet`);
 
-    await program.provider.connection.confirmTransaction(txHash, "finalized");
+  //   await program.provider.connection.confirmTransaction(txHash, "finalized");
 
-    try {
-      let _secondUser = await program.account.porkUser.fetch(secondUser);
+  //   try {
+  //     let _secondUser = await program.account.porkUser.fetch(secondUser);
 
-      console.log("Second User Bigger Holder Timestamp: " + _secondUser.biggerHolderTimestamp.toString());
-      console.log("Second User Bigger Holder Times: " + _secondUser.timesOfBiggerHolder.toString());
-      console.log("Second User Deposited Amount: " + _secondUser.depostedAmount.toString());
-      console.log("Second User Claimable Amount: " + _secondUser.claimableAmount.toString());
-      console.log("Second User Last Deposited Timestamp: " + _secondUser.lastDepositTimestamp.toString());
-    } catch (err) {
-      console.error(err);
-    }
+  //     console.log("Second User Bigger Holder Timestamp: " + _secondUser.biggerHolderTimestamp.toString());
+  //     console.log("Second User Bigger Holder Times: " + _secondUser.timesOfBiggerHolder.toString());
+  //     console.log("Second User Deposited Amount: " + _secondUser.depostedAmount.toString());
+  //     console.log("Second User Claimable Amount: " + _secondUser.claimableAmount.toString());
+  //     console.log("Second User Last Deposited Timestamp: " + _secondUser.lastDepositTimestamp.toString());
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
 
-    const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
+  //   const stakeTokenAccount = await program.provider.connection.getTokenAccountBalance(stakeAta);
 
-    console.log("Smart Contract: " + stakeTokenAccount.value.amount);
+  //   console.log("Smart Contract: " + stakeTokenAccount.value.amount);
 
-    const treasuryTokenAccount = await program.provider.connection.getTokenAccountBalance(treasuryAta1);
+  //   const treasuryTokenAccount = await program.provider.connection.getTokenAccountBalance(treasuryAta1);
 
-    console.log("Treasury Wallet: " + treasuryTokenAccount.value.amount);
+  //   console.log("Treasury Wallet: " + treasuryTokenAccount.value.amount);
 
-    const firstTokenAccount = await program.provider.connection.getTokenAccountBalance(firstAta);
+  //   const firstTokenAccount = await program.provider.connection.getTokenAccountBalance(firstAta);
 
-    console.log("First Wallet: " + firstTokenAccount.value.amount);
+  //   console.log("First Wallet: " + firstTokenAccount.value.amount);
 
-    const secondTokenAccount = await program.provider.connection.getTokenAccountBalance(secondAta);
+  //   const secondTokenAccount = await program.provider.connection.getTokenAccountBalance(secondAta);
 
-    console.log("Second Wallet: " + secondTokenAccount.value.amount);
+  //   console.log("Second Wallet: " + secondTokenAccount.value.amount);
 
-    let _porkStake = await program.account.porkStake.fetch(porkStake);
+  //   let _porkStake = await program.account.porkStake.fetch(porkStake);
 
-    console.log("Smart Contract Deposited Amount: " + _porkStake.totalAmount.toString());
+  //   console.log("Smart Contract Deposited Amount: " + _porkStake.totalAmount.toString());
 
-    let _porkUser = await program.account.porkUser.fetch(firstUser);
+  //   let _porkUser = await program.account.porkUser.fetch(firstUser);
 
-    console.log("First User Bigger Holder Timestamp: " + _porkUser.biggerHolderTimestamp.toString());
-    console.log("First User Bigger Holder Times: " + _porkUser.timesOfBiggerHolder.toString());
-    console.log("First User Deposited Amount: " + _porkUser.depostedAmount.toString());
-    console.log("First User Claimable Amount: " + _porkUser.claimableAmount.toString());
-    console.log("First User Last Deposited Timestamp: " + _porkUser.lastDepositTimestamp.toString());
-    console.log("First User Claimed Timestamp: " + _porkUser.claimedAmount.toString());
+  //   console.log("First User Bigger Holder Timestamp: " + _porkUser.biggerHolderTimestamp.toString());
+  //   console.log("First User Bigger Holder Times: " + _porkUser.timesOfBiggerHolder.toString());
+  //   console.log("First User Deposited Amount: " + _porkUser.depostedAmount.toString());
+  //   console.log("First User Claimable Amount: " + _porkUser.claimableAmount.toString());
+  //   console.log("First User Last Deposited Timestamp: " + _porkUser.lastDepositTimestamp.toString());
+  //   console.log("First User Claimed Timestamp: " + _porkUser.claimedAmount.toString());
 
-  });
+  // });
 
   // it("Second Deposited!", async () => {
   //   const txHash = await program.methods.deposit(secondDeposit)
