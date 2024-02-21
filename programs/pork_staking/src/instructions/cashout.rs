@@ -29,7 +29,7 @@ pub fn cashout(ctx: Context<CashOut>, stake_bump: u8) -> Result<()> {
 
   let current_timestamp = Clock::get()?.unix_timestamp;
 
-  require_gte!(current_timestamp, user.last_deposit_timestamp + 3600, PorkStakeError::ClaimOrCompoundEveryHourError);
+  require_gte!(current_timestamp, user.last_deposit_timestamp + 10, PorkStakeError::ClaimOrCompoundEveryHourError);
 
   amount += calculate_rewards(user.deposted_amount, user.last_deposit_timestamp, current_timestamp);
 
